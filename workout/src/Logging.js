@@ -1,39 +1,23 @@
-
-//importing react files
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Table, Modal, Alert } from 'react-bootstrap';
+import { collection, addDoc } from 'firebase/firestore';
+import { db } from './firebase'; // Ensure Firestore is initialized correctly
 
-
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc } from 'firebase/firestore/lite';
-import { db } from './firebase';
-
-
-var options = { weekday: 'long', month: 'long', day: 'numeric' };
-const today = new Date()
+const options = { weekday: 'long', month: 'long', day: 'numeric' };
+const today = new Date();
 const day_formatted = today.toLocaleDateString("en-US", options);
 
 function Logging() {
-    //grabbing the date, formatting it in day of the week, day, month
-
-
-
-    //setting error alerts
     const [error, setError] = useState("");
-
-    //list that stores the exercises I've done on this day
-    const [stored_exercises, stored_Exercises] = useState([]);
-    //boolean that elects to show popup after clicking add exercise
+    const [stored_exercises, setStoredExercises] = useState([]);
     const [showPopup, setShowPopup] = useState(false);
-    //information from the popup of the exercise I just inputted
-    const [input_exercise, input_Exercise] = useState({
+    const [input_exercise, setInputExercise] = useState({
         name: '',
         sets: '3',
         reps: '',
         weight: '',
     });
 
-    // List of predefined exercises
     const exercise_options = [
         "Bench Press", "Squat", "Deadlift", "Overhead Press",
         "Pull-Ups", "Barbell Rows", "Bicep Curls", "Tricep Dips",
@@ -41,67 +25,94 @@ function Logging() {
         "Lat Pulldown", "Seated Row",
     ];
 
+    useEffect(() => {
+        async function testPush() {
+            try {
+                if (!db) {
+                    throw new Error("Firestore is not initialized properly.");
+                }
 
-    //updating the inputted exercise with the typed in data
+                const loggingCollection = collection(db, "logging");
+                const docRef = await addDoc(loggingCollection, {
+                    testData: "This is a random push",
+                    createdAt: new Date()
+                });
+
+                console.log("Document written with ID: ", docRef.id);
+            } catch (e) {
+                console.error("Error adding document: ", e);
+            }
+        }
+
+        testPush();
+    }, []);
+
     const handleChange = (e) => {
-        input_Exercise({ ...input_exercise, [e.target.name]: e.target.value });
+        setInputExercise({ ...input_exercise, [e.target.name]: e.target.value });
         setError("");
     };
-    //updating my stored exercises if the inputted exercise is valid
-    const handleSubmit = () => {
-        //make sure is a valid exercise
+
+    const handleSubmit = async () => {
         if (!exercise_options.includes(input_exercise.name)) {
             setError("Please select a valid exercise from the list.");
             return;
         }
 
         if (input_exercise.name && input_exercise.sets && input_exercise.reps && input_exercise.weight) {
-            stored_Exercises([...stored_exercises, input_exercise]);
+            const newExercise = { ...input_exercise, createdAt: new Date() };
+            setStoredExercises([...stored_exercises, newExercise]);
             setShowPopup(false);
-            input_Exercise({ name: '', sets: '', reps: '', weight: '' });
+            setInputExercise({ name: '', sets: '', reps: '', weight: '' });
+
+            try {
+                const exercisesCollection = collection(db, "exercises");
+                await addDoc(exercisesCollection, newExercise);
+                console.log("Exercise logged in Firestore");
+            } catch (e) {
+                console.error("Error adding exercise to Firestore: ", e);
+            }
         }
     };
 
-    //Function to render the table of exercises I have done today
-    const renderExerciseTable = () => {
-        return stored_exercises.length > 0 ? (
-            <table style={{ margin: 'auto', borderCollapse: 'collapse', width: '50%', border: '1px solid black' }}>
-                <thead>
-                    <tr style={{ backgroundColor: '#f2f2f2' }}>
-                        <th style={{ border: '1px solid black', padding: '8px' }}>Exercise</th>
-                        <th style={{ border: '1px solid black', padding: '8px' }}>Sets</th>
-                        <th style={{ border: '1px solid black', padding: '8px' }}>Reps</th>
-                        <th style={{ border: '1px solid black', padding: '8px' }}>Weight</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {/* Printing exercise name, set, reps, weights */}
-                    {stored_exercises.map((ex, index) => (
-                        <tr key={index}>
-                            <td style={{ border: '1px solid black', padding: '8px' }}>{ex.name}</td>
-                            <td style={{ border: '1px solid black', padding: '8px' }}>{ex.sets}</td>
-                            <td style={{ border: '1px solid black', padding: '8px' }}>{ex.reps}</td>
-                            <td style={{ border: '1px solid black', padding: '8px' }}>{ex.weight} lbs</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        ) : (
-            <p>No exercises added yet.</p>
-        );
-    };
+    return (
+        <div style={{ textAlign: 'center' }}>
+            <h2 style={{ fontSize: '2em' }}>{day_formatted}</h2>
+            <button onClick={() => setShowPopup(true)}>Add Exercise</button>
 
-    //Function to render the popup form where user inputs exercise they just did
-    const renderPopup = () => {
-        return (
+            <div style={{ marginTop: '20px' }}>
+                {stored_exercises.length > 0 ? (
+                    <Table striped bordered hover>
+                        <thead>
+                            <tr>
+                                <th>Exercise</th>
+                                <th>Sets</th>
+                                <th>Reps</th>
+                                <th>Weight</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {stored_exercises.map((ex, index) => (
+                                <tr key={index}>
+                                    <td>{ex.name}</td>
+                                    <td>{ex.sets}</td>
+                                    <td>{ex.reps}</td>
+                                    <td>{ex.weight} lbs</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </Table>
+                ) : (
+                    <p>No exercises added yet.</p>
+                )}
+            </div>
+
             <Modal show={showPopup} onHide={() => setShowPopup(false)} centered>
                 <Modal.Header closeButton>
                     <Modal.Title>Add Exercise</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    {error && <Alert variant="danger">{error}</Alert>} {/* Display error */}
+                    {error && <Alert variant="danger">{error}</Alert>}
                     <Form>
-                        {/* Exercise Dropdown with Autofill */}
                         <Form.Group>
                             <Form.Label>Exercise</Form.Label>
                             <Form.Control
@@ -117,17 +128,14 @@ function Logging() {
                                 ))}
                             </datalist>
                         </Form.Group>
-
                         <Form.Group>
                             <Form.Label>Sets</Form.Label>
                             <Form.Control type="number" name="sets" value={input_exercise.sets} onChange={handleChange} />
                         </Form.Group>
-
                         <Form.Group>
                             <Form.Label>Reps</Form.Label>
                             <Form.Control type="number" name="reps" value={input_exercise.reps} onChange={handleChange} />
                         </Form.Group>
-
                         <Form.Group>
                             <Form.Label>Weight (lbs)</Form.Label>
                             <Form.Control type="number" name="weight" value={input_exercise.weight} onChange={handleChange} />
@@ -139,26 +147,8 @@ function Logging() {
                     <Button variant="primary" onClick={handleSubmit}>OK</Button>
                 </Modal.Footer>
             </Modal>
-        );
-    };
-
-
-    //What gets printed!
-    return (
-        <div style={{ textAlign: 'center' }}>
-            <h2 style={{ fontSize: '2em' }}>{day_formatted}</h2>
-            {/* Add exercise button */}
-            <button onClick={() => setShowPopup(true)}>Add Exercise</button>
-
-            {/* Exercise Table */}
-            <div style={{ marginTop: '20px' }}>{renderExerciseTable()}</div>
-
-            {/* Popup */}
-            {showPopup && renderPopup()}
         </div>
     );
-
-
 }
 
 export default Logging;
