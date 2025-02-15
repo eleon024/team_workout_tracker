@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/react-gh-pages/static/css/main.9fe40f7c.css",
-    "main.js": "/react-gh-pages/static/js/main.fe74eace.js",
-    "static/js/488.e31e8132.chunk.js": "/react-gh-pages/static/js/488.e31e8132.chunk.js",
-    "index.html": "/react-gh-pages/index.html",
-    "main.9fe40f7c.css.map": "/react-gh-pages/static/css/main.9fe40f7c.css.map",
-    "main.fe74eace.js.map": "/react-gh-pages/static/js/main.fe74eace.js.map",
-    "488.e31e8132.chunk.js.map": "/react-gh-pages/static/js/488.e31e8132.chunk.js.map"
+    "main.css": "/team_workout_tracker/static/css/main.9fe40f7c.css",
+    "main.js": "/team_workout_tracker/static/js/main.5f38e403.js",
+    "static/js/488.e31e8132.chunk.js": "/team_workout_tracker/static/js/488.e31e8132.chunk.js",
+    "index.html": "/team_workout_tracker/index.html",
+    "main.9fe40f7c.css.map": "/team_workout_tracker/static/css/main.9fe40f7c.css.map",
+    "main.5f38e403.js.map": "/team_workout_tracker/static/js/main.5f38e403.js.map",
+    "488.e31e8132.chunk.js.map": "/team_workout_tracker/static/js/488.e31e8132.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.9fe40f7c.css",
-    "static/js/main.fe74eace.js"
+    "static/js/main.5f38e403.js"
   ]
 }
