@@ -1,13 +1,23 @@
 import React from 'react';
 import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { Container, Navbar, Nav, NavDropdown } from 'react-bootstrap';
+import { Container, Navbar, Nav, NavDropdown, Button } from 'react-bootstrap';
 import Logging from './Logging';
 import Calendar from './Calendar';
 import Social from './Social';
+import SignIn from './SignIn';
+import SignUp from './SignUp';
+import PrivateRoute from './PrivateRoute';
+import { useAuth } from './useAuth';
+import { auth } from './firebase';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-
 function App() {
+  const { currentUser } = useAuth();
+
+  const handleSignOut = () => {
+    auth.signOut();
+  };
+
   return (
     <Router>
       <div className="App">
@@ -16,36 +26,39 @@ function App() {
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="mr-auto">
-              {/* General Dropdown Menu */}
               <NavDropdown title="Menu" id="basic-nav-dropdown">
-                <NavDropdown.Item as={Link} to="/logging">
-                  Logging
-                </NavDropdown.Item>
-                <br></br>
-                <NavDropdown.Item as={Link} to="/calendar">
-                  Calendar
-                </NavDropdown.Item>
-                <br></br>
-                <NavDropdown.Item as={Link} to="/social">
-                  Team Feed
-                </NavDropdown.Item>
-                <br></br>
+                <NavDropdown.Item as={Link} to="/logging">Logging</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/calendar">Calendar</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/social">Team Feed</NavDropdown.Item>
               </NavDropdown>
-              {/* Additional Nav Links if needed */}
               <Nav.Link as={Link} to="/about">About</Nav.Link>
+              {!currentUser ? (
+                <>
+                  <Nav.Link as={Link} to="/signin">Sign In</Nav.Link>
+                  <Nav.Link as={Link} to="/signup">Sign Up</Nav.Link>
+                </>
+              ) : (
+                <>
+                  <Nav.Link as={Link} to="/logging">Logging</Nav.Link>
+                  <Nav.Link as={Link} to="/calendar">Calendar</Nav.Link>
+                  <Nav.Link as={Link} to="/social">Social</Nav.Link>
+                  <Button variant="outline-light" onClick={handleSignOut}>Sign Out</Button>
+                </>
+              )}
             </Nav>
           </Navbar.Collapse>
         </Navbar>
         <Container className="mt-4">
           <Routes>
-            {/* Route to Logging.js component */}
-            <Route path="/logging" element={<Logging />} />
-            {/* Define additional routes here */}
-            <Route path="/calendar" element={<Calendar/> }/>
-            <Route path="/social" element={<Social/> }/>
+            <Route path="/signin" element={<SignIn />} />
+            <Route path="/signup" element={<SignUp />} />
             <Route path="/about" element={<div>A team workout tracker by Edgar, Carter, Ben, and MDP.</div>} />
-            {/* Default route */}
             <Route path="/" element={<div>Welcome to My New Project!</div>} />
+            <Route element={<PrivateRoute />}>
+              <Route path="/logging" element={<Logging />} />
+              <Route path="/calendar" element={<Calendar />} />
+              <Route path="/social" element={<Social />} />
+            </Route>
           </Routes>
         </Container>
       </div>
