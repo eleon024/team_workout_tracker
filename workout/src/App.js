@@ -2,13 +2,17 @@ import React from 'react';
 import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Container, Navbar, Nav, NavDropdown } from 'react-bootstrap';
 import Logging from './Logging';
+import Calendar from './Calendar';
+import Social from './Social';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 
 function App() {
   return (
     <Router>
       <div className="App">
         <Navbar bg="dark" variant="dark" expand="lg">
-          <Navbar.Brand as={Link} to="/">My New Project</Navbar.Brand>
+          <Navbar.Brand as={Link} to="/">Team Workout Tracker</Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="mr-auto">
@@ -17,9 +21,15 @@ function App() {
                 <NavDropdown.Item as={Link} to="/logging">
                   Logging
                 </NavDropdown.Item>
-                <NavDropdown.Item as={Link} to="/other">
-                  Other Option
+                <br></br>
+                <NavDropdown.Item as={Link} to="/calendar">
+                  Calendar
                 </NavDropdown.Item>
+                <br></br>
+                <NavDropdown.Item as={Link} to="/social">
+                  Team Feed
+                </NavDropdown.Item>
+                <br></br>
               </NavDropdown>
               {/* Additional Nav Links if needed */}
               <Nav.Link as={Link} to="/about">About</Nav.Link>
@@ -31,8 +41,9 @@ function App() {
             {/* Route to Logging.js component */}
             <Route path="/logging" element={<Logging />} />
             {/* Define additional routes here */}
-            <Route path="/other" element={<div>Other Option Page</div>} />
-            <Route path="/about" element={<div>About Page</div>} />
+            <Route path="/calendar" element={<Calendar/> }/>
+            <Route path="/social" element={<Social/> }/>
+            <Route path="/about" element={<div>A team workout tracker by Edgar, Carter, Ben, and MDP.</div>} />
             {/* Default route */}
             <Route path="/" element={<div>Welcome to My New Project!</div>} />
           </Routes>
