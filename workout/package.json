@@ -1,7 +1,7 @@
 {
   "name": "team_workout_tracker",
   "version": "0.1.0",
-  "homepage": "https://gitname.github.io/react-gh-pages",
+  "homepage": "https://eleon024.github.io/team_workout_tracker",
   "private": true,
   "dependencies": {
     "@fullcalendar/core": "^6.1.15",
