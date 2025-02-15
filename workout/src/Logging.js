@@ -15,7 +15,8 @@ function Logging() {
         name: '',
         sets: '',
         reps: '',
-        weight: ''
+        weight: '',
+        today
     });
 
     //defining the input from the pop up window
