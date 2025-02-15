@@ -4,22 +4,22 @@ import { Form, Button, Table, Modal, Alert } from 'react-bootstrap';
 function Logging() {
     //grabbing the date, formatting it in day of the week, day, month
     var options = { weekday: 'long', month: 'long', day: 'numeric' };
-    const today = new Date().toLocaleDateString("en-US", options);
+    const today = new Date()
+    const day_formatted = today.toLocaleDateString("en-US", options);
 
     //setting error alerts
     const [error, setError] = useState("");
 
     //list that stores the exercises I've done on this day
-    const [stored_exercises, stored_Exercises] = useState([]);
+    const [stored_exercises, stored_Exercises] = useState(today, []);
     //boolean that elects to show popup after clicking add exercise
     const [showPopup, setShowPopup] = useState(false);
     //information from the popup of the exercise I just inputted
     const [input_exercise, input_Exercise] = useState({
         name: '',
-        sets: '',
+        sets: '3',
         reps: '',
         weight: '',
-        today
     });
 
     // List of predefined exercises
@@ -131,10 +131,16 @@ function Logging() {
         );
     };
 
+
+
+
+
+
+
     //What gets printed!
     return (
         <div style={{ textAlign: 'center' }}>
-            <h2 style={{ fontSize: '2em' }}>{today}</h2>
+            <h2 style={{ fontSize: '2em' }}>{day_formatted}</h2>
             {/* Add exercise button */}
             <button onClick={() => setShowPopup(true)}>Add Exercise</button>
 
