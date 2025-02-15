@@ -1,11 +1,23 @@
+
+//importing react files
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Table, Modal, Alert } from 'react-bootstrap';
 
+//importing firebase things
+import { initializeApp } from 'firebase/app';
+import { getFirestore, collection, getDocs } from 'firebase/firestore/lite';
+
+
+
+
+var options = { weekday: 'long', month: 'long', day: 'numeric' };
+const today = new Date()
+const day_formatted = today.toLocaleDateString("en-US", options);
+
 function Logging() {
     //grabbing the date, formatting it in day of the week, day, month
-    var options = { weekday: 'long', month: 'long', day: 'numeric' };
-    const today = new Date()
-    const day_formatted = today.toLocaleDateString("en-US", options);
+
+
 
     //setting error alerts
     const [error, setError] = useState("");
@@ -152,5 +164,43 @@ function Logging() {
         </div>
     );
 }
+
+
+// // Function to save exercises to Firebase before leaving the page
+// window.addEventListener('beforeunload', async (stored_Exercises) => {
+//     const user_name = "John Doe"; // Replace with dynamic username
+
+//     await db.collection("workouts").doc(`${user_name}_${today}`).set({
+//         user: user_name,
+//         date: today,
+//         exercises: stored_Exercises
+//     });
+// });
+
+
+// // Function to retrieve exercises from Firebase for a given date
+// async function fetchExercises(userName, date) {
+//     const docRef = db.collection("workouts").doc(`${userName}_${date}`);
+//     const docSnap = await docRef.get();
+
+//     if (docSnap.exists) {
+//         console.log("Exercises for", date, ":", docSnap.data().exercises);
+//         return docSnap.data().exercises;
+//     } else {
+//         console.log("No exercises found for", date);
+//         return [];
+//     }
+// }
+
+// // Example usage
+// document.addEventListener("DOMContentLoaded", async () => {
+//     const userName = "JohnDoe"; // Replace with dynamic username
+//     const date = new Date().toISOString().split('T')[0];
+//     const exercises = await fetchExercises(userName, date);
+//     console.log(exercises);
+// });
+
+
+
 
 export default Logging;
