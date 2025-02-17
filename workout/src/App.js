@@ -30,6 +30,7 @@ function App() {
                 <NavDropdown.Item as={Link} to="/logging">Logging</NavDropdown.Item>
                 <NavDropdown.Item as={Link} to="/calendar">Calendar</NavDropdown.Item>
                 <NavDropdown.Item as={Link} to="/social">Team Feed</NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/profile">Profile</NavDropdown.Item>
               </NavDropdown>
               <Nav.Link as={Link} to="/about">About</Nav.Link>
               {!currentUser ? (
@@ -42,6 +43,7 @@ function App() {
                   <Nav.Link as={Link} to="/logging">Logging</Nav.Link>
                   <Nav.Link as={Link} to="/calendar">Calendar</Nav.Link>
                   <Nav.Link as={Link} to="/social">Social</Nav.Link>
+                  <Nav.Link as={Link} to="/profile">Profile</Nav.Link>
                   <Button variant="outline-light" onClick={handleSignOut}>Sign Out</Button>
                 </>
               )}
@@ -58,6 +60,7 @@ function App() {
               <Route path="/logging" element={<Logging />} />
               <Route path="/calendar" element={<Calendar />} />
               <Route path="/social" element={<Social />} />
+              <Route path="/profile" element={<ManageProfile />} />
             </Route>
           </Routes>
         </Container>
