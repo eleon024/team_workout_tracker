@@ -51,7 +51,7 @@ function SocialFeed() {
         const userProfileRef = doc(db, "profiles", userId);
         const userProfileSnap = await getDoc(userProfileRef);
         if (userProfileSnap.exists()) {
-          userName = userProfileSnap.data().firstName;
+          userName = userProfileSnap.data().firstName+" "+userProfileSnap.data().lastName;
         }
       } catch (error) {
         console.error("Error fetching user profile: ", error);

@@ -6,10 +6,12 @@ import Calendar from './Calendar';
 import Social from './Social';
 import SignIn from './SignIn';
 import SignUp from './SignUp';
+import ManageProfile from './ManageProfile';
 import PrivateRoute from './PrivateRoute';
 import { useAuth } from './useAuth';
 import { auth } from './firebase';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import ReelsPage from './ReelsPage';
 
 function App() {
   const { currentUser } = useAuth();
@@ -31,6 +33,7 @@ function App() {
                 <NavDropdown.Item as={Link} to="/calendar">Calendar</NavDropdown.Item>
                 <NavDropdown.Item as={Link} to="/social">Team Feed</NavDropdown.Item>
                 <NavDropdown.Item as={Link} to="/profile">Profile</NavDropdown.Item>
+                <Nav.Link as={Link} to="/ReelsPage">ReelsPage</Nav.Link>
               </NavDropdown>
               <Nav.Link as={Link} to="/about">About</Nav.Link>
               {!currentUser ? (
@@ -43,7 +46,8 @@ function App() {
                   <Nav.Link as={Link} to="/logging">Logging</Nav.Link>
                   <Nav.Link as={Link} to="/calendar">Calendar</Nav.Link>
                   <Nav.Link as={Link} to="/social">Social</Nav.Link>
-                  <Nav.Link as={Link} to="/profile">Profile</Nav.Link>
+                  <Nav.Link as={Link} to="/Profile">Profile</Nav.Link>
+                  <Nav.Link as={Link} to="/ReelsPage">ReelsPage</Nav.Link>
                   <Button variant="outline-light" onClick={handleSignOut}>Sign Out</Button>
                 </>
               )}
@@ -61,6 +65,7 @@ function App() {
               <Route path="/calendar" element={<Calendar />} />
               <Route path="/social" element={<Social />} />
               <Route path="/profile" element={<ManageProfile />} />
+              <Route path="/ReelsPage" element={<ReelsPage />} />
             </Route>
           </Routes>
         </Container>
