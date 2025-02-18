@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/team_workout_tracker/static/css/main.c01d63c0.css",
-    "main.js": "/team_workout_tracker/static/js/main.28b730dd.js",
+    "main.js": "/team_workout_tracker/static/js/main.8c68edf3.js",
     "index.html": "/team_workout_tracker/index.html",
     "main.c01d63c0.css.map": "/team_workout_tracker/static/css/main.c01d63c0.css.map",
-    "main.28b730dd.js.map": "/team_workout_tracker/static/js/main.28b730dd.js.map"
+    "main.8c68edf3.js.map": "/team_workout_tracker/static/js/main.8c68edf3.js.map"
   },
   "entrypoints": [
     "static/css/main.c01d63c0.css",
-    "static/js/main.28b730dd.js"
+    "static/js/main.8c68edf3.js"
   ]
 }
