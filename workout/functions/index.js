@@ -1,12 +1,15 @@
 // functions/index.js
 const { onObjectFinalized } = require("firebase-functions/v2/storage");
+const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 const functions = require("firebase-functions"); // For logging (optional)
 const admin = require("firebase-admin");
 const ffmpeg = require("fluent-ffmpeg");
 const ffmpegPath = require("ffmpeg-static");
 const os = require("os");
 const path = require("path");
+const cors = require('cors')({ origin: true });  // Allow requests from any origin
 const fs = require("fs");
+
 
 admin.initializeApp();
 ffmpeg.setFfmpegPath(ffmpegPath);
@@ -76,3 +79,69 @@ exports.processFile = onObjectFinalized(async (event) => {
       .save(tempMp4Path);
   });
 });
+
+exports.sendNewPostNotification = onDocumentCreated("feed/{postId}", async (event) => {
+    const post = event.data.data(); // New post document data
+    const postId = event.params.postId;
+  
+    // Build the message payload for topic messaging
+    const message = {
+      notification: {
+        title: "New Post!",
+        body: `${post.userName} posted a new update on the feed.`,
+      },
+      data: {
+        postId: postId,
+      },
+      topic: "workouts", // Topic name (no "/topics/" prefix needed)
+    };
+  
+    try {
+      // Send a message to devices subscribed to the provided topic.
+      const response = await admin.messaging().send(message);
+      console.log("Successfully sent message:", response);
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
+    
+    return null;
+  });
+  
+
+
+// This Cloud Function will handle POST requests to register tokens.
+exports.registerToken = functions.https.onRequest((req, res) => {
+    cors(req, res, async () => {
+      if (req.method !== 'POST') {
+        return res.status(405).send('Method Not Allowed');
+      }
+    
+      const { token } = req.body;
+      if (!token) {
+        return res.status(400).json({ message: 'No token provided.' });
+      }
+    
+      try {
+        // Save the token in Firestore.
+        await admin.firestore().collection('fcmTokens').doc(token).set({
+          token,
+          registeredAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        
+        // Subscribe this token to the "workouts" topic.
+        admin.messaging().subscribeToTopic([token], "workouts")
+          .then((response) => {
+            console.log("Token subscribed to workouts:", response);
+          })
+          .catch((error) => {
+            console.error("Error subscribing token to workouts:", error);
+          });
+    
+        return res.status(200).json({ message: 'Token registered and subscribed successfully.' });
+      } catch (error) {
+        console.error('Error registering token:', error);
+        return res.status(500).json({ message: 'Internal Server Error' });
+      }
+    });
+  });
+  

@@ -171,66 +171,67 @@ function SocialFeed() {
       </Form>
 
       <div style={{ marginTop: '2rem' }}>
-        {feedPosts.map((post) => (
-          <Card key={post.id} style={{ marginBottom: '1rem' }}>
-            <Card.Body>
-              <Card.Text>{post.text}</Card.Text>
-              <div style={{ marginBottom: '0.5rem' }}>
-                <Button variant="outline-success" onClick={() => handleLike(post.id)}>
-                  <FaThumbsUp /> {post.likes}
-                </Button>{' '}
-                <Button variant="outline-danger" onClick={() => handleDislike(post.id)}>
-                  <FaThumbsDown /> {post.dislikes}
-                </Button>
-              </div>
-              <div>
-                <Form.Control
-                  type="text"
-                  placeholder="Add a comment..."
-                  value={commentInputs[post.id] || ''}
-                  onChange={(e) => handleCommentChange(post.id, e.target.value)}
-                />
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => handleAddComment(post.id)}
-                  style={{ marginTop: '0.5rem' }}
-                >
-                  Add Comment
-                </Button>
-              </div>
-              {post.comments && post.comments.length > 0 && (
-                <div style={{ marginTop: '1rem' }}>
-                  <h6>Comments:</h6>
-                  {post.comments.map((comment, index) => (
-                    <Card key={index} style={{ marginBottom: '0.5rem', padding: '0.5rem' }}>
-                      <Card.Text style={{ margin: 0 }}>
-                        <strong>{comment.userName}</strong>: {comment.text}
-                      </Card.Text>
-                      <div style={{ fontSize: '0.8rem' }}>
-                        {new Date(comment.createdAt.seconds * 1000).toLocaleString()}
-                      </div>
-                    </Card>
-                  ))}
+      {feedPosts
+  .filter((post) => post.text && post.text.trim() !== "")
+  .map((post) => (
+    <Card key={post.id} style={{ marginBottom: '1rem' }}>
+      <Card.Body>
+        <Card.Text>{post.text}</Card.Text>
+        <div style={{ marginBottom: '0.5rem' }}>
+          <Button variant="outline-success" onClick={() => handleLike(post.id)}>
+            <FaThumbsUp /> {post.likes}
+          </Button>{' '}
+          <Button variant="outline-danger" onClick={() => handleDislike(post.id)}>
+            <FaThumbsDown /> {post.dislikes}
+          </Button>
+        </div>
+        <div>
+          <Form.Control
+            type="text"
+            placeholder="Add a comment..."
+            value={commentInputs[post.id] || ''}
+            onChange={(e) => handleCommentChange(post.id, e.target.value)}
+          />
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => handleAddComment(post.id)}
+            style={{ marginTop: '0.5rem' }}
+          >
+            Add Comment
+          </Button>
+        </div>
+        {post.comments && post.comments.length > 0 && (
+          <div style={{ marginTop: '1rem' }}>
+            <h6>Comments:</h6>
+            {post.comments.map((comment, index) => (
+              <Card key={index} style={{ marginBottom: '0.5rem', padding: '0.5rem' }}>
+                <Card.Text style={{ margin: 0 }}>
+                  <strong>{comment.userName}</strong>: {comment.text}
+                </Card.Text>
+                <div style={{ fontSize: '0.8rem' }}>
+                  {new Date(comment.createdAt.seconds * 1000).toLocaleString()}
                 </div>
-              )}
-              <Card.Footer style={{ fontSize: '0.8rem', marginTop: '1rem' }}>
-                Posted by: {post.userName} on{' '}
-                {new Date(post.createdAt.seconds * 1000).toLocaleString()}
-              </Card.Footer>
-              {/* Only show "View Workout" button if a workoutId exists */}
-              {post.workoutId && (
-                <div style={{ marginTop: '1rem' }}>
-                  <Button variant="info" onClick={() => handleViewWorkout(post.workoutId)}>
-                    View Workout
-                  </Button>
-                </div>
-              )}
-            </Card.Body>
-          </Card>
-        ))}
-      </div>
-
+              </Card>
+            ))}
+          </div>
+        )}
+        <Card.Footer style={{ fontSize: '0.8rem', marginTop: '1rem' }}>
+          Posted by: {post.userName} on{' '}
+          {new Date(post.createdAt.seconds * 1000).toLocaleString()}
+        </Card.Footer>
+        {post.workoutId && (
+          <div style={{ marginTop: '1rem' }}>
+            <Button variant="info" onClick={() => handleViewWorkout(post.workoutId)}>
+              View Workout
+            </Button>
+          </div>
+        )}
+      </Card.Body>
+    </Card>
+  ))}
+  </div>
+  
       {/* Modal for displaying complete workout details */}
       <Modal show={showWorkoutModal} onHide={() => setShowWorkoutModal(false)} centered>
         <Modal.Header closeButton>
