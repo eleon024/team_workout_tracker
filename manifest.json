@@ -1,7 +1,7 @@
 {
   "name": "Team Workout Tracker",
   "short_name": "Workout",
-  "start_url": "/",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
