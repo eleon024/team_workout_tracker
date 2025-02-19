@@ -20,7 +20,7 @@ exports.processFile = onObjectFinalized(async (event) => {
   const contentType = object.contentType; // e.g., "video/webm"
   
   // Only process if the file is a WebM video
-  if (!contentType || !contentType.startsWith("video/") || !filePath.endsWith(".webm")) {
+  if (!contentType || !contentType.startsWith("video/")) {
     console.log("Not a WebM video. Exiting function.");
     return;
   }
@@ -29,12 +29,15 @@ exports.processFile = onObjectFinalized(async (event) => {
   const fileName = path.basename(filePath);
   const tempFilePath = path.join(os.tmpdir(), fileName);
 
-  // Download the WebM file to a temporary directory
+  // Get the file extension in lowercase
+  const fileExtension = path.extname(filePath).toLowerCase();
+
+
   await bucket.file(filePath).download({ destination: tempFilePath });
   console.log("Downloaded file to", tempFilePath);
   
   // Define the output MP4 file path in the temporary directory
-  const mp4FileName = fileName.replace(".webm", ".mp4");
+  const mp4FileName = fileName.replace(/\.[^/.]+$/, ".mp4");
   const tempMp4Path = path.join(os.tmpdir(), mp4FileName);
   
   // Convert the WebM file to MP4 using FFmpeg
@@ -43,7 +46,7 @@ exports.processFile = onObjectFinalized(async (event) => {
       .outputOptions("-c:v libx264") // Convert video using H.264 codec
       .on("end", async () => {
         console.log("Transcoding succeeded.");
-        const mp4FilePath = filePath.replace(".webm", ".mp4");
+        const mp4FilePath = filePath.replace(/\.[^/.]+$/, ".mp4");
         // Upload the MP4 file back to Storage
         await bucket.upload(tempMp4Path, {
           destination: mp4FilePath,

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { getProfilePhotoUrl } from './getProfilePhotoUrl';
 import {
   collection,
   query,
@@ -8,7 +9,8 @@ import {
   updateDoc,
   doc,
   increment,
-  arrayUnion
+  arrayUnion,
+  getDoc
 } from 'firebase/firestore';
 import { db } from './firebase';
 import {
@@ -86,44 +88,85 @@ const VideoRecorder = ({ onVideoRecorded }) => {
     };
   }, []);
 
+
   const startRecording = () => {
     if (!stream) return;
-
-    let options = {};
-    let mimeType = '';
-
-    if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
-      mimeType = 'video/webm;codecs=vp9';
-    } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8')) {
-      mimeType = 'video/webm;codecs=vp8';
-    } else if (MediaRecorder.isTypeSupported('video/webm')) {
-      mimeType = 'video/webm';
-    }
-
-    if (mimeType) {
-      options.mimeType = mimeType;
-    }
-
-    const recorder = new MediaRecorder(stream, options);
-    setMediaRecorder(recorder);
-    recorder.start();
-    setRecording(true);
-    chunksRef.current = [];
-
-    recorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        chunksRef.current.push(event.data);
+    
+    // Create video element for live preview
+    const videoElement = document.createElement('video');
+    videoElement.srcObject = stream;
+    videoElement.muted = true;
+    videoElement.play();
+    
+    // Create a canvas to capture and mirror the video frames
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    videoElement.onloadedmetadata = () => {
+      canvas.width = videoElement.videoWidth;
+      canvas.height = videoElement.videoHeight;
+      
+      const drawFrame = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.scale(-1, 1); // Mirror horizontally
+        ctx.drawImage(videoElement, -canvas.width, 0, canvas.width, canvas.height);
+        ctx.restore();
+        requestAnimationFrame(drawFrame);
+      };
+      
+      drawFrame();
+      
+      // Capture the canvas stream and add the original audio tracks
+      const canvasStream = canvas.captureStream();
+      stream.getAudioTracks().forEach((track) => canvasStream.addTrack(track));
+      
+      // Determine the best MIME type for recording
+      let options = {};
+      if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) {
+        options.mimeType = 'video/webm;codecs=vp9,opus';
+      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')) {
+        options.mimeType = 'video/webm;codecs=vp8,opus';
+      } else if (MediaRecorder.isTypeSupported('video/mp4;codecs=h264')) {
+        options.mimeType = 'video/mp4;codecs=h264';
+      } else if (MediaRecorder.isTypeSupported('video/mp4')) {
+        options.mimeType = 'video/mp4';
+      } else if (MediaRecorder.isTypeSupported('video/webm')) {
+        options.mimeType = 'video/webm';
+      } else {
+        console.warn('No supported MIME type found for MediaRecorder.');
+      }
+      
+      try {
+        const recorder = new MediaRecorder(canvasStream, options);
+        setMediaRecorder(recorder);
+        recorder.start();
+        setRecording(true);
+        chunksRef.current = [];
+      
+        recorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            chunksRef.current.push(event.data);
+          }
+        };
+      
+        recorder.onstop = () => {
+          const blob = new Blob(chunksRef.current, {
+            type: options.mimeType || 'video/webm'
+          });
+          const url = URL.createObjectURL(blob);
+          setVideoUrl(url);
+          setRecording(false);
+          onVideoRecorded(blob);
+        };
+      } catch (e) {
+        console.error('MediaRecorder error:', e);
+        // Optionally, fall back to RecordRTC here for Safari/iOS
       }
     };
-
-    recorder.onstop = () => {
-      const blob = new Blob(chunksRef.current, { type: mimeType || 'video/webm' });
-      const url = URL.createObjectURL(blob);
-      setVideoUrl(url);
-      setRecording(false);
-      onVideoRecorded(blob);
-    };
   };
+  
+  
 
   const stopRecording = () => {
     if (mediaRecorder && recording) {
@@ -145,7 +188,8 @@ const VideoRecorder = ({ onVideoRecorded }) => {
         style={{
           width: '100%',
           maxHeight: '400px',
-          borderRadius: '8px'
+          borderRadius: '8px',
+          transform: 'scaleX(-1)' // This line mirrors the preview
         }}
       />
       <div style={{ marginTop: '0.5rem' }}>
@@ -167,6 +211,29 @@ const VideoRecorder = ({ onVideoRecorded }) => {
   );
 };
 
+
+const getUserName = async () => {
+  const auth = getAuth();
+  const user = auth.currentUser;
+  if (!user) return 'Guest';
+
+  try {
+    // Assuming each profile document is stored under profiles/<user.uid>
+    const profileRef = doc(db, 'profiles', user.uid);
+    const profileSnap = await getDoc(profileRef);
+    if (profileSnap.exists()) {
+      const data = profileSnap.data();
+      return `${data.firstName} ${data.lastName}`;
+    } else {
+      return 'User';
+    }
+  } catch (error) {
+    console.error('Error fetching profile:', error);
+    return 'User';
+  }
+};
+
+
 const ReelsPage = () => {
   const [reels, setReels] = useState([]);
   const [showVideoRecorder, setShowVideoRecorder] = useState(false);
@@ -185,17 +252,14 @@ const ReelsPage = () => {
   const handleVideoUpload = async (videoBlob) => {
     try {
       const storage = getStorage();
-      const fileName = `${Date.now()}.webm`;
+      const fileName = `${Date.now()}.mp4`;
       const videoRef = ref(storage, `videos/${fileName}`);
       await uploadBytes(videoRef, videoBlob);
       const downloadUrl = await getDownloadURL(videoRef);
-
-      const auth = getAuth();
-      const user = auth.currentUser;
-      let userName = 'Guest';
-      if (user) {
-        userName = user.firstName || 'User';
-      }
+    
+      // Get the user’s name from their profile
+      const userName = await getUserName();
+      const photoUrl = await getProfilePhotoUrl();
 
       await addDoc(collection(db, 'feed'), {
         videoUrl: downloadUrl,
@@ -232,18 +296,20 @@ const ReelsPage = () => {
   const handleAddComment = async (id) => {
     const postRef = doc(db, 'feed', id);
     const text = commentInputs[id];
+
+
     if (!text || text.trim() === '') return;
     try {
-      const auth = getAuth();
-      const user = auth.currentUser;
-      let userName = 'Guest';
-      if (user) {
-        userName = user.firstName || 'User';
-      }
+    // Get the user’s name from their profile
+    const userName = await getUserName();
+
+          // Retrieve the profile photo URL for the comment
+      const profilePhotoUrl = await getProfilePhotoUrl();
       await updateDoc(postRef, {
         comments: arrayUnion({
           text: text.trim(),
           userName,
+          photoUrl,
           createdAt: new Date()
         })
       });
@@ -298,10 +364,35 @@ const ReelsPage = () => {
                   <FaThumbsDown /> {post.dislikes || 0}
                 </Button>
               </div>
-              <div style={{ position: 'absolute', bottom: '10%', left: '5%', color: '#fff' }}>
-                <h4>{post.userName}</h4>
-                <p>{new Date(post.createdAt.seconds * 1000).toLocaleString()}</p>
-              </div>
+              <div
+  style={{
+    position: 'absolute',
+    bottom: '10%',
+    left: '5%',
+    display: 'flex',
+    alignItems: 'center',
+    color: '#fff'
+  }}
+>
+  <img
+    src={post.profilePhotoUrl || '/default-avatar.jpg'} // fallback if photoUrl is missing
+    alt="Profile"
+    style={{
+      width: '40px',
+      height: '40px',
+      borderRadius: '50%',
+      marginRight: '8px',
+      objectFit: 'cover'
+    }}
+  />
+  <div>
+    <h4 style={{ margin: 0 }}>{post.userName}</h4>
+    <p style={{ margin: 0 }}>
+      {new Date(post.createdAt.seconds * 1000).toLocaleString()}
+    </p>
+  </div>
+</div>
+
             </div>
             {/* Comment Section Below the Video */}
             <div style={{ marginTop: '0.5rem', background: '#f0f0f0', padding: '0.5rem', borderRadius: '4px' }}>
@@ -319,11 +410,25 @@ const ReelsPage = () => {
               </div>
               {post.comments && post.comments.length > 0 && (
                 <div style={{ marginTop: '0.5rem', maxHeight: '150px', overflowY: 'auto', padding: '0.5rem', background: '#fff', borderRadius: '4px' }}>
-                  {post.comments.map((comment, index) => (
-                    <div key={index} style={{ marginBottom: '0.25rem' }}>
-                      <strong>{comment.userName}: </strong>{comment.text}
-                    </div>
-                  ))}
+{post.comments.map((comment, index) => (
+  <div key={index} style={{ marginBottom: '0.25rem', display: 'flex', alignItems: 'center' }}>
+    <img
+      src={comment.photoUrl || '/default-avatar.jpg'} // Use the photo URL saved in the comment, with a fallback
+      alt="Profile"
+      style={{
+        width: '30px',
+        height: '30px',
+        borderRadius: '50%',
+        marginRight: '8px',
+        objectFit: 'cover'
+      }}
+    />
+    <div>
+      <strong>{comment.userName}: </strong>{comment.text}
+    </div>
+  </div>
+))}
+
                 </div>
               )}
             </div>
