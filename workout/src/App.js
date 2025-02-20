@@ -91,6 +91,7 @@ import { auth } from './firebase';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import ReelsPage from './ReelsPage';
 import NotificationSetup from './NotificationSetup';  // Import our notifications setup
+import DatingProfiles from './DatingProfiles'
 
 function App() {
   const { currentUser } = useAuth();
@@ -122,11 +123,12 @@ function App() {
                 </>
               ) : (
                 <>
-                  <Nav.Link as={Link} to="/logging">Logging</Nav.Link>
-                  <Nav.Link as={Link} to="/calendar">Calendar</Nav.Link>
-                  <Nav.Link as={Link} to="/social">Social</Nav.Link>
-                  <Nav.Link as={Link} to="/profile">Profile</Nav.Link>
-                  <Nav.Link as={Link} to="/ReelsPage">ReelsPage</Nav.Link>
+                  <Nav.Link as={Link} to="/logging">Log Exercise </Nav.Link>
+                  <Nav.Link as={Link} to="/calendar">Calendar </Nav.Link>
+                  <Nav.Link as={Link} to="/social">Team Feed </Nav.Link>
+                  <Nav.Link as={Link} to="/profile">Profile </Nav.Link>
+                  <Nav.Link as={Link} to="/ReelsPage">Reels </Nav.Link>
+                  <Nav.Link as={Link} to="/DatingProfiles">Swole-Mates </Nav.Link>
                   <Button variant="outline-light" onClick={handleSignOut}>Sign Out</Button>
                 </>
               )}
@@ -147,6 +149,7 @@ function App() {
               <Route path="/social" element={<Social />} />
               <Route path="/profile" element={<ManageProfile />} />
               <Route path="/ReelsPage" element={<ReelsPage />} />
+              <Route path="/DatingProfiles" element={<DatingProfiles />} />
             </Route>
           </Routes>
         </Container>
