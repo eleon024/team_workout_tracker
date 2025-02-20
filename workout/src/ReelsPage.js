@@ -259,12 +259,14 @@ const ReelsPage = () => {
     
       // Get the user’s name from their profile
       const userName = await getUserName();
-      const photoUrl = await getProfilePhotoUrl();
+      // Retrieve the profile photo URL for the comment
+      const profilePhotoUrl = await getProfilePhotoUrl();
 
       await addDoc(collection(db, 'feed'), {
         videoUrl: downloadUrl,
         filePath: `videos/${fileName}`,
         userName,
+        profilePhotoUrl,
         createdAt: new Date(),
         likes: 0,
         dislikes: 0,
@@ -309,7 +311,7 @@ const ReelsPage = () => {
         comments: arrayUnion({
           text: text.trim(),
           userName,
-          photoUrl,
+          profilePhotoUrl,
           createdAt: new Date()
         })
       });
@@ -336,7 +338,15 @@ const ReelsPage = () => {
       )}
 
       {/* Reels Display */}
-      <div style={{ overflowY: 'scroll', scrollSnapType: 'y mandatory', height: '100vh' }}>
+      {/* <div style={{ overflowY: 'scroll', scrollSnapType: 'y mandatory', height: '100vh' }}>
+       */}
+       <div
+  style={{
+    overflowY: 'scroll',
+    WebkitOverflowScrolling: 'touch',
+    scrollSnapType: 'y mandatory',
+    height: 'calc(var(--vh, 1vh) * 100)',
+  }}>
         {reels.map((post) => (
           <div
             key={post.id}
@@ -353,8 +363,9 @@ const ReelsPage = () => {
                 src={post.mp4Url ? post.mp4Url : post.videoUrl}
                 controls
                 loop
-                muted
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                playsInline
+                webkit-playsinline="true"
+                style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
               />
               <div style={{ position: 'absolute', top: '10%', right: '5%', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <Button variant="outline-success" onClick={() => handleLike(post.id)}>
@@ -375,7 +386,7 @@ const ReelsPage = () => {
   }}
 >
   <img
-    src={post.profilePhotoUrl || '/default-avatar.jpg'} // fallback if photoUrl is missing
+    src={post.profilePhotoUrl || `${process.env.PUBLIC_URL}/default-avatar.jpg`} // fallback if photoUrl is missing
     alt="Profile"
     style={{
       width: '40px',
@@ -396,7 +407,7 @@ const ReelsPage = () => {
             </div>
             {/* Comment Section Below the Video */}
             <div style={{ marginTop: '0.5rem', background: '#f0f0f0', padding: '0.5rem', borderRadius: '4px' }}>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'left' }}>
                 <input
                   type="text"
                   placeholder="Add a comment..."
@@ -410,24 +421,32 @@ const ReelsPage = () => {
               </div>
               {post.comments && post.comments.length > 0 && (
                 <div style={{ marginTop: '0.5rem', maxHeight: '150px', overflowY: 'auto', padding: '0.5rem', background: '#fff', borderRadius: '4px' }}>
-{post.comments.map((comment, index) => (
-  <div key={index} style={{ marginBottom: '0.25rem', display: 'flex', alignItems: 'center' }}>
-    <img
-      src={comment.photoUrl || '/default-avatar.jpg'} // Use the photo URL saved in the comment, with a fallback
-      alt="Profile"
-      style={{
-        width: '30px',
-        height: '30px',
-        borderRadius: '50%',
-        marginRight: '8px',
-        objectFit: 'cover'
-      }}
-    />
-    <div>
-      <strong>{comment.userName}: </strong>{comment.text}
-    </div>
-  </div>
-))}
+
+              {post.comments.map((comment, index) => (
+                <div
+                  key={index}
+                  style={{
+                    marginBottom: '0.25rem',
+                    display: 'flex',
+                    alignItems: 'center' // changed from 'left' to 'center'
+                  }}
+                >
+                  <img
+                    src={comment.profilePhotoUrl || `${process.env.PUBLIC_URL}/default-avatar.jpg`}
+                    alt="Profile"
+                    style={{
+                      width: '30px',
+                      height: '30px',
+                      borderRadius: '50%',
+                      marginRight: '8px',
+                      objectFit: 'cover'
+                    }}
+                  />
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <strong>{comment.userName}</strong>: <span> {comment.text}</span>
+                  </div>
+                </div>
+              ))}
 
                 </div>
               )}
