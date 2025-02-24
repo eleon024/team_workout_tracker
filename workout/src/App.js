@@ -93,6 +93,7 @@ import ReelsPage from './ReelsPage';
 import NotificationSetup from './NotificationSetup';  // Import our notifications setup
 import DatingProfiles from './DatingProfiles'
 import PerformanceGraphsPage from './PerformanceGraphs';
+import HomePage from './HomePage';
 
 function App() {
   const { currentUser } = useAuth();
@@ -124,6 +125,7 @@ function App() {
                 </>
               ) : (
                 <>
+                  <Nav.Link as={Link} to="/homepage">HomePage</Nav.Link>
                   <Nav.Link as={Link} to="/logging">Log Exercise </Nav.Link>
                   <Nav.Link as={Link} to="/calendar">Calendar </Nav.Link>
                   <Nav.Link as={Link} to="/social">Team Feed </Nav.Link>
@@ -144,7 +146,8 @@ function App() {
             <Route path="/signin" element={<SignIn />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/about" element={<div>A team workout tracker by Edgar, Carter, Ben, and MDP.</div>} />
-            <Route path="/" element={<div>Welcome to My New Project!</div>} />
+            <Route path="/" element={<HomePage />} />
+            <Route path="/homepage" element={<HomePage />} />
             <Route element={<PrivateRoute />}>
               <Route path="/logging" element={<Logging />} />
               <Route path="/calendar" element={<Calendar />} />
