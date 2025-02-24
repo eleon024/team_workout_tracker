@@ -92,6 +92,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import ReelsPage from './ReelsPage';
 import NotificationSetup from './NotificationSetup';  // Import our notifications setup
 import DatingProfiles from './DatingProfiles'
+import PerformanceGraphsPage from './PerformanceGraphs';
 
 function App() {
   const { currentUser } = useAuth();
@@ -129,6 +130,7 @@ function App() {
                   <Nav.Link as={Link} to="/profile">Profile </Nav.Link>
                   <Nav.Link as={Link} to="/ReelsPage">Reels </Nav.Link>
                   <Nav.Link as={Link} to="/DatingProfiles">Swole-Mates </Nav.Link>
+                  <Nav.Link as={Link} to="/performanceGraphs">Performance Graphs</Nav.Link>
                   <Button variant="outline-light" onClick={handleSignOut}>Sign Out</Button>
                 </>
               )}
@@ -150,6 +152,7 @@ function App() {
               <Route path="/profile" element={<ManageProfile />} />
               <Route path="/ReelsPage" element={<ReelsPage />} />
               <Route path="/DatingProfiles" element={<DatingProfiles />} />
+              <Route path="/performanceGraphs" element={<PerformanceGraphsPage />} />
             </Route>
           </Routes>
         </Container>
